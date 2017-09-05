@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<b:beans xmlns="http://www.springframework.org/schema/security"
+             xmlns:b="http://www.springframework.org/schema/beans"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:context="http://www.springframework.org/schema/context"
+             xmlns:security="http://www.springframework.org/schema/security"
+             xsi:schemaLocation="
+	http://www.springframework.org/schema/security
+	http://www.springframework.org/schema/security/spring-security.xsd
+	http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans.xsd"
+	
+	>
+ 
+	<http realm="www..com" use-expressions="true">
+		<intercept-url pattern="/" access="isFullyAuthenticated() or isAnonymous()"/>
+		<intercept-url pattern="/resources/**" access="isFullyAuthenticated() or isAnonymous()"/>
+
+	    <intercept-url pattern="/error/**" access="isFullyAuthenticated()"/>
+
+	    <!-- Extra permit -->
+	    
+	    <intercept-url pattern="/**" access="hasRole('ADMIN') or hasRole('USER')"/> 
+        
+ 
+		<form-login login-page="/" default-target-url="/welcome"
+					authentication-failure-url="/?login_error=1"
+					username-parameter="username" password-parameter="password"/>
+		
+		<http-basic/>
+		
+		<logout logout-success-url="/"/>
+		
+		<remember-me/>
+		<headers/>
+		<csrf/>
+	
+	</http>
+	
+	<authentication-manager>
+		<authentication-provider user-service-ref="jdbcGroupsImpl">
+         <password-encoder hash="sha-256"/>
+        </authentication-provider>
+	</authentication-manager>
+	
+	<b:bean id="jdbcGroupsImpl" class="org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl">
+		<b:property name="enableGroups" value="false"/>
+		<b:property name="enableAuthorities" value="true"/>
+		<b:property name="dataSource" ref="dataSource"/>
+	</b:bean>
+ 
+</b:beans>
